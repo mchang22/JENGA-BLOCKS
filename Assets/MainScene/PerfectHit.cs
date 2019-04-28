@@ -7,6 +7,7 @@ public class PerfectHit : MonoBehaviour
 {
 
     public AnimationCurve curve;
+
     private Image image;
 
     void Start()
@@ -14,17 +15,22 @@ public class PerfectHit : MonoBehaviour
         image = GetComponent<Image>();
         StartCoroutine(Effect());
     }
+
     IEnumerator Effect()
     {
         float duration = 0.5f;
         float timer = Time.time;
+
         Vector3 originalScale = transform.localScale;
+
         while ((Time.time - timer) <= duration)
         {
             transform.localScale = originalScale * (1 + curve.Evaluate((Time.time - timer) / duration));
             image.color = SetAlpha(image.color, 1 - (Time.time - timer) / duration);
+
             yield return null;
         }
+
         Destroy(gameObject);
     }
 
@@ -32,6 +38,4 @@ public class PerfectHit : MonoBehaviour
     {
         return new Color(color.r, color.g, color.b, alpha);
     }
-
-
 }

@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class BackGroundManager : MonoBehaviour {
+public class BackgroundManager : MonoBehaviour
+{
+
     public GameObject Wall1;
     public GameObject Wall2;
 

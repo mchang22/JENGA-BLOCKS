@@ -7,6 +7,7 @@ public class NormalHit : MonoBehaviour
 {
 
     public AnimationCurve curve;
+
     private Image image;
 
     void Start()
@@ -14,16 +15,19 @@ public class NormalHit : MonoBehaviour
         image = GetComponent<Image>();
         StartCoroutine(Effect());
     }
+
     IEnumerator Effect()
     {
         float duration = 0.5f;
         float timer = Time.time;
-        //Vector3 originalScale = transform.localScale;
+
         while ((Time.time - timer) <= duration)
         {
             image.color = SetAlpha(image.color, curve.Evaluate((Time.time - timer) / duration));
+
             yield return null;
         }
+
         Destroy(gameObject);
     }
 
@@ -31,6 +35,4 @@ public class NormalHit : MonoBehaviour
     {
         return new Color(color.r, color.g, color.b, alpha);
     }
-
-
 }

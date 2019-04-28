@@ -5,9 +5,8 @@ using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour
 {
-    // Start is called before the first frame update
-    public static GameManager Instance;
 
+    public static GameManager Instance;
 
     public GameObject BlockPrefab;
     public GameObject FirstBlock;
@@ -21,6 +20,7 @@ public class GameManager : MonoBehaviour
     public GameObject MovingBlock;
     public GameObject RecoverSample;
     public GameObject StartButton;
+    public GameObject RestartButton;
     public bool isFail = false;
     public Text ScoreText;
 
@@ -29,26 +29,30 @@ public class GameManager : MonoBehaviour
         if (Instance == null)
             Instance = this;
     }
+
     void Start()
     {
         StartCoroutine(GameLoop());
     }
+
     void Init()
     {
         CurrentCenter = Vector3.up;
         CurrentScale = FirstBlock.transform.localScale;
         CurrentMoveDirection = Vector3.forward;
         RecoverSample = FirstBlock;
+
         Blocks.Add(FirstBlock);
         RecoverBlocks.Push(FirstBlock);
     }
 
     void SpawnBlock()
     {
-        GameObject temp = Instantiate(BlockPrefab, CurrentCenter, Quaternion.identity);
+        GameObject temp = Instantiate(BlockPrefab, CurrentCenter, Quaternion.identity, this.transform.Find("Blocks"));
         temp.GetComponent<BlockBehavior>().Init(CurrentCenter, CurrentMoveDirection, CurrentScale);
         MovingBlock = temp;
     }
+
     void CutBlockForward(GameObject newBlock, GameObject oldBlock)
     {
         Vector3 oldCenter = oldBlock.transform.position;
@@ -57,14 +61,16 @@ public class GameManager : MonoBehaviour
         Vector3 newScale = newBlock.transform.localScale;
 
         float offset = (newCenter - oldCenter).z;
-        if (Mathf.Abs(offset) > oldScale.z)  //fail?
+
+        if (Mathf.Abs(offset) > oldScale.z) //fail
         {
             newBlock.AddComponent<Rigidbody>();
             newBlock.GetComponent<BlockBehavior>().Moving = false;
             isFail = true;
             return;
         }
-        if (Mathf.Abs(offset) < 0.5f)
+
+        if (Mathf.Abs(offset) < 0.5f) //within error range
         {
             MovingBlock.GetComponent<BlockBehavior>().Moving = false;
             MovingBlock.transform.position = CurrentCenter;
@@ -72,8 +78,9 @@ public class GameManager : MonoBehaviour
             CurrentCenter += Vector3.up;
             Score++;
             Combo++;
-            AudioManager.Instance.PlayComboSound(Combo);
 
+            AudioManager.Instance.PlayComboSound(Combo);
+            //Do perfect tap effect
             PerfectHitManager.Instance.ShowNormalHitEffect(Blocks[Score].transform.position - Vector3.up * 0.5f, Blocks[Score].transform.localScale);
             if (Combo >= 3)
             {
@@ -86,6 +93,7 @@ public class GameManager : MonoBehaviour
 
             return;
         }
+
 
         Vector3 ACenter = (oldCenter + newCenter) / 2f + Vector3.up * 0.5f;
         Vector3 AScale = new Vector3(oldScale.x, 1f, (oldScale.z - Mathf.Abs(offset)));
@@ -100,13 +108,14 @@ public class GameManager : MonoBehaviour
         {
             BCenter = oldCenter + Vector3.up - Vector3.forward * oldScale.z / 2f + Vector3.forward * offset / 2f;
         }
+
         Vector3 BScale = new Vector3(oldScale.x, 1f, Mathf.Abs(offset));
 
         newBlock.transform.position = ACenter;
         newBlock.transform.localScale = AScale;
         newBlock.GetComponent<BlockBehavior>().Moving = false;
 
-        GameObject b = Instantiate(BlockPrefab, BCenter, Quaternion.identity);
+        GameObject b = Instantiate(BlockPrefab, BCenter, Quaternion.identity, this.transform.Find("Blocks"));
         b.transform.localScale = BScale;
         b.AddComponent<Rigidbody>();
 
@@ -126,6 +135,7 @@ public class GameManager : MonoBehaviour
         Vector3 newCenter = newBlock.transform.position;
         Vector3 newScale = newBlock.transform.localScale;
 
+
         float offset = (newCenter - oldCenter).x;
 
         if (Mathf.Abs(offset) > oldScale.x)
@@ -135,7 +145,8 @@ public class GameManager : MonoBehaviour
             isFail = true;
             return;
         }
-        if (Mathf.Abs(offset) < 0.5f)
+
+        if (Mathf.Abs(offset) < 0.5f) //within error range
         {
             MovingBlock.GetComponent<BlockBehavior>().Moving = false;
             MovingBlock.transform.position = CurrentCenter;
@@ -143,8 +154,9 @@ public class GameManager : MonoBehaviour
             CurrentCenter += Vector3.up;
             Score++;
             Combo++;
-            AudioManager.Instance.PlayComboSound(Combo);
 
+            AudioManager.Instance.PlayComboSound(Combo);
+            //Do perfect tap effect
             PerfectHitManager.Instance.ShowNormalHitEffect(Blocks[Score].transform.position - Vector3.up * 0.5f, Blocks[Score].transform.localScale);
             if (Combo >= 3)
             {
@@ -156,11 +168,11 @@ public class GameManager : MonoBehaviour
             }
 
             return;
-
         }
 
+
         Vector3 ACenter = (oldCenter + newCenter) / 2f + Vector3.up * 0.5f;
-        Vector3 AScale = new Vector3(oldScale.x - Mathf.Abs(offset), 1f, (oldScale.z));
+        Vector3 AScale = new Vector3((oldScale.x - Mathf.Abs(offset)), 1f, oldScale.z);
 
         Vector3 BCenter = Vector3.zero;
 
@@ -172,13 +184,14 @@ public class GameManager : MonoBehaviour
         {
             BCenter = oldCenter + Vector3.up - Vector3.right * oldScale.x / 2f + Vector3.right * offset / 2f;
         }
+
         Vector3 BScale = new Vector3(Mathf.Abs(offset), 1f, oldScale.z);
 
         newBlock.transform.position = ACenter;
         newBlock.transform.localScale = AScale;
         newBlock.GetComponent<BlockBehavior>().Moving = false;
 
-        GameObject b = Instantiate(BlockPrefab, BCenter, Quaternion.identity);
+        GameObject b = Instantiate(BlockPrefab, BCenter, Quaternion.identity, this.transform.Find("Blocks"));
         b.transform.localScale = BScale;
         b.AddComponent<Rigidbody>();
 
@@ -191,8 +204,6 @@ public class GameManager : MonoBehaviour
         Combo = 0;
     }
 
-
-
     void ChangeBlockDirection()
     {
         if (CurrentMoveDirection == Vector3.forward)
@@ -200,6 +211,7 @@ public class GameManager : MonoBehaviour
         else
             CurrentMoveDirection = Vector3.forward;
     }
+
     public void RecoverBlock()
     {
         if (RecoverBlocks.Count != 0)
@@ -254,42 +266,67 @@ public class GameManager : MonoBehaviour
 
     public void Restart()
     {
-        print("Restart");
+        foreach (var entry in GetComponentsInChildren<BlockBehavior>())
+        {
+            Destroy(entry.gameObject);
+        }
+
+        Blocks.Clear();
+        RecoverBlocks.Clear();
+        isFail = false;
+
+        Score = 0;
+        Combo = 0;
+
+        CameraManager.Instance.desirePos = new Vector3(23, 26, 23);
     }
+
     IEnumerator GameLoop()
     {
-        Init();
-
-        AudioManager.Instance.PlayStartSound();
-
-
-        yield return new WaitUntil(() => !StartButton.activeInHierarchy);
-
-        while (!isFail)
+        while (true)
         {
-            SpawnBlock();
-            yield return new WaitUntil(() => Input.GetMouseButtonDown(0));
+            Init();
 
+            AudioManager.Instance.PlayStartSound();
 
-            CameraManager.Instance.GoUp();
+            yield return new WaitUntil(() => !StartButton.activeInHierarchy);
 
-            if (CurrentMoveDirection == Vector3.forward)
-                CutBlockForward(MovingBlock, Blocks[Score]);
-            if (CurrentMoveDirection == Vector3.right)
-                CutBlockRight(MovingBlock, Blocks[Score]);
+            while (!isFail)
+            {
+                SpawnBlock();
 
-            if (isFail)
-                break;
-            ChangeBlockDirection();
-            if (Combo >= 5)
-                RecoverBlock();
+                yield return new WaitUntil(() => Input.GetMouseButtonDown(0));
 
-            yield return null;
+                CameraManager.Instance.GoUp();
+
+                if (CurrentMoveDirection == Vector3.forward)
+                    CutBlockForward(MovingBlock, Blocks[Score]);
+                if (CurrentMoveDirection == Vector3.right)
+                    CutBlockRight(MovingBlock, Blocks[Score]);
+
+                if (isFail)
+                    break;
+
+                ChangeBlockDirection();
+
+                if (Combo >= 5)
+                    RecoverBlock();
+
+                yield return null;
+            }
+            StartCoroutine(CameraManager.Instance.Blur());
+            RestartButton.SetActive(true);
+            yield return new WaitUntil(() => !RestartButton.activeInHierarchy);
+            StartCoroutine(CameraManager.Instance.Focus());
+            Restart();
         }
-        //Print fail UI
     }
+
     void Update()
     {
         ScoreText.text = Score.ToString();
+
     }
+
 }
+
