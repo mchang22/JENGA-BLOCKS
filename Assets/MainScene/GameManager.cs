@@ -70,7 +70,7 @@ public class GameManager : MonoBehaviour
             return;
         }
 
-        if (Mathf.Abs(offset) < 0.5f) //within error range
+        if (Mathf.Abs(offset) < 0.1f) //within error range
         {
             MovingBlock.GetComponent<BlockBehavior>().Moving = false;
             MovingBlock.transform.position = CurrentCenter;
