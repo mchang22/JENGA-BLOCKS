@@ -7,8 +7,6 @@ Primary technologies used: C#, Unity,
 ##Demo GIF
 
 <p align="center">
-<img src="/Users/michaelchang/Blocks/ezgif.com-gif-maker (2).gif" width="500">
+<img src="Blocks/ezgif.com-gif-maker (2).gif" width="500">
 </p>
-
-
 
